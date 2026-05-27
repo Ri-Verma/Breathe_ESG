@@ -1,0 +1,139 @@
+{
+  "api_provider": "navan_mock",
+  "export_date": "2024-01-31T00:00:00Z",
+  "data": [
+    {
+      "trip_id": "TRP-10045",
+      "employee_id": "EMP-001",
+      "status": "COMPLETED",
+      "segments": [
+        {
+          "mode": "FLIGHT",
+          "origin_airport": "JFK",
+          "destination_airport": "LHR",
+          "cabin_class": "ECONOMY",
+          "departure_time": "2024-01-05T08:00:00Z"
+        }
+      ]
+    },
+    {
+      "trip_id": "TRP-10046",
+      "employee_id": "EMP-002",
+      "status": "COMPLETED",
+      "segments": [
+        {
+          "mode": "FLIGHT",
+          "origin_airport": "SFO",
+          "destination_airport": "SEA",
+          "cabin_class": "BUSINESS",
+          "departure_time": "2024-01-08T14:30:00Z"
+        }
+      ]
+    },
+    {
+      "trip_id": "TRP-10047",
+      "employee_id": "EMP-003",
+      "status": "COMPLETED",
+      "segments": [
+        {
+          "mode": "FLIGHT",
+          "origin_airport": "LAX",
+          "destination_airport": "ORD",
+          "cabin_class": "BUSINESS",
+          "departure_time": "2024-01-12T10:15:00Z"
+        }
+      ]
+    },
+    {
+      "trip_id": "TRP-10048",
+      "employee_id": "EMP-004",
+      "status": "CANCELLED",
+      "segments": [
+        {
+          "mode": "FLIGHT",
+          "origin_airport": "BOS",
+          "destination_airport": "DUB",
+          "cabin_class": "ECONOMY",
+          "departure_time": "2024-01-18T06:50:00Z"
+        }
+      ]
+    },
+    {
+      "trip_id": "TRP-10049",
+      "employee_id": "EMP-005",
+      "status": "COMPLETED",
+      "segments": [
+        {
+          "mode": "TRAIN",
+          "origin_airport": "NYC",
+          "destination_airport": "WAS",
+          "cabin_class": "ECONOMY",
+          "departure_time": "2024-01-20T09:00:00Z"
+        }
+      ]
+    },
+    {
+      "trip_id": "TRP-10050",
+      "employee_id": "EMP-006",
+      "status": "COMPLETED",
+      "segments": [
+        {
+          "mode": "FLIGHT",
+          "origin_airport": "ATL",
+          "destination_airport": "MIA",
+          "cabin_class": "ECONOMY",
+          "departure_time": "2024-01-22T13:20:00Z"
+        }
+      ]
+    },
+    {
+      "trip_id": "TRP-10051",
+      "employee_id": "EMP-007",
+      "status": "COMPLETED",
+      "segments": [
+        {
+          "mode": "FLIGHT",
+          "origin_airport": "ORD",
+          "destination_airport": "FRA",
+          "cabin_class": "PREMIUM ECONOMY",
+          "departure_time": "2024-01-25T17:45:00Z"
+        }
+      ]
+    },
+    {
+      "trip_id": "TRP-10052",
+      "employee_id": "EMP-008",
+      "status": "COMPLETED",
+      "segments": [
+        {
+          "mode": "FLIGHT",
+          "origin_airport": "LHR",
+          "destination_airport": "DXB",
+          "cabin_class": "BUSINESS",
+          "departure_time": "2024-01-28T02:30:00Z"
+        },
+        {
+          "mode": "GROUND",
+          "origin_airport": "DXB",
+          "destination_airport": "DWC",
+          "cabin_class": "ECONOMY",
+          "departure_time": "2024-01-28T05:30:00Z"
+        }
+      ]
+    },
+    {
+      "trip_id": "TRP-10053",
+      "employee_id": "EMP-009",
+      "status": "COMPLETED",
+      "segments": [
+        {
+          "mode": "FLIGHT",
+          "origin_airport": "SYD",
+          "destination_airport": "AKL",
+          "cabin_class": "ECONOMY",
+          "departure_time": "2024-02-01T22:10:00Z"
+        }
+      ]
+    }
+  ]
+}
