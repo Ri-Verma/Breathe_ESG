@@ -32,4 +32,4 @@ EXPOSE 8000
 # Run gunicorn
 # CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "4", "core.wsgi"]
 
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "4", "core.wsgi"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "4"]
