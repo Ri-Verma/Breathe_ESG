@@ -60,7 +60,7 @@ function FileUpload({ onUploadSuccess, onError }) {
 
   return (
     <div className="file-upload-container">
-      <h2>📤 Upload ESG Data</h2>
+      <h2>Upload Data(CSV/JSON)</h2>
       <p className="subtitle">Help us track your emissions with accurate data</p>
       
       <div className="source-selector">
@@ -74,7 +74,7 @@ function FileUpload({ onUploadSuccess, onError }) {
               onChange={(e) => setSourceType(e.target.value)}
               disabled={uploading}
             />
-            <span>🏭 SAP (Fuel & Equipment)</span>
+            <span>SAP (Fuel & Equipment)</span>
           </label>
           <label className="radio-label">
             <input 
@@ -84,7 +84,7 @@ function FileUpload({ onUploadSuccess, onError }) {
               onChange={(e) => setSourceType(e.target.value)}
               disabled={uploading}
             />
-            <span>💡 Utility Bills (Electricity)</span>
+            <span>Utility Bills (Electricity)</span>
           </label>
           <label className="radio-label">
             <input 
@@ -94,7 +94,7 @@ function FileUpload({ onUploadSuccess, onError }) {
               onChange={(e) => setSourceType(e.target.value)}
               disabled={uploading}
             />
-            <span>✈️ Travel Data (Business Trips)</span>
+            <span>Travel Data (Business Trips)</span>
           </label>
         </div>
       </div>
@@ -130,7 +130,7 @@ function FileUpload({ onUploadSuccess, onError }) {
       </div>
 
       <label htmlFor="fileInput" className="browse-button">
-        {uploading ? 'Uploading...' : '📂 Browse Files'}
+        {uploading ? 'Uploading...' : ' Browse Files'}
       </label>
     </div>
   )

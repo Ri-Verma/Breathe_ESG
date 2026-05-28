@@ -257,7 +257,7 @@ def parse_travel_json(file_content: str, tenant_id: int):
 | **Real-world complexity** | German headers, mixed dates, mixed units | Cross-month billing, missing fields | Distance lookup, multi-segment trips |
 | **Normalization** | GAL → L | Already kWh | Distance → kgCO2e via factors |
 | **Scope** | Scope 1 (Direct) | Scope 2 (Energy) | Scope 3 (Travel) |
-| **Sample rows** | 14 | 9 | 9 trips |
+| **Sample rows** | 14 | 13 | 9 trips |
 | **MVP fully handles** | ✅ | ✅ | ✅ (mocked) |
 | **Phase 2 needed** | Plant master sync, material lookups | Carbon intensity per region | Real Navan OAuth, dynamic distance API |
 
@@ -266,7 +266,30 @@ def parse_travel_json(file_content: str, tenant_id: int):
 ## Data Quality & Audit Resilience
 
 All three parsers follow the principle:
-- **Lenient parsing:** Accept messy data, don't crash
-- **Eager flagging:** Mark issues; let analyst review
-- **Full provenance:** Store raw payload → can re-parse if logic changes
-- **Audit trail:** Every record creation + edit logged with user + timestamp
+- **Lenient parsing:** Accept messy data, don't crash.
+- **Eager flagging:** Mark issues and output a status of `FLAGGED` to let the analyst review.
+- **Full provenance:** Store overall file metadata in `RawIngestionLog` and log detailed parser issues in initial audit logs, linking all resulting emission records to their source file log.
+- **Audit trail:** Every record creation + edit logged with user + timestamp.
+
+---
+
+## Real-World Ingestion Testing and Robustness Verification
+
+During Phase 3 and Phase 3.5 testing, the parser implementations were validated against the sample data located in the `data_samples/` directory:
+
+1. **SAP CSV Ingestion (`data_samples/sap_export.csv`):**
+   - Successfully parsed all 14 rows.
+   - Handled three distinct date formats (`DD.MM.YYYY`, `MM/DD/YYYY`, `DD-MM-YYYY`) using the robust `dateutil.parser`.
+   - Performed correct volume unit conversions (e.g., converted gallons to liters using the `3.78541` multiplier).
+   - Flagged rows with missing quantities or invalid fields, creating corresponding `EmissionRecord` entries with a status of `FLAGGED`.
+
+2. **Utility Billing Ingestion (`data_samples/utility_bill.csv`):**
+   - Successfully parsed 13 utility billing rows representing multiple meters across buildings (`BLDG-A`, `BLDG-B`, `BLDG-C`, `BLDG-D`).
+   - Handled non-standard billing dates crossing calendar months (e.g., `2023-12-15` to `2024-01-14`).
+   - Gracefully identified rows with missing `Peak_kWh` fields (such as double commas) and successfully flagged records that lacked both peak and off-peak metrics to allow user review.
+
+3. **Corporate Travel Ingestion (`data_samples/travel_api_response.json`):**
+   - Parsed 9 travel segments across multiple employee trips.
+   - Filtered out cancelled trips (`status != 'COMPLETED'`) to ensure only actual emissions are logged.
+   - Looked up route distances dynamically from a preset airport distance dictionary (e.g., LHR-DXB = 5,247 km).
+   - Successfully applied mode-specific emission factors (Flights: `0.255 kgCO2e/km`, Trains: `0.041 kgCO2e/km`, Ground: `0.120 kgCO2e/km`) and cabin class indicators to compute Scope 3 emissions.

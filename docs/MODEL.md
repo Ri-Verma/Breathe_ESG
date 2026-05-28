@@ -122,10 +122,10 @@ class AuditLog(models.Model):
 
 ```
 Tenant (1)
-  ├─ RawIngestionLog (many)  [immutable, source-of-truth]
-  ├─ EmissionRecord (many)   [mutable until APPROVED]
-  │   └─ AuditLog (many)     [immutable history]
-  └─ User (many)             [analysts who edit records]
+  ├─ RawIngestionLog (many, related_name='raw_logs')  [immutable, source-of-truth metadata]
+  ├─ EmissionRecord (many, related_name='emissions')  [mutable until APPROVED]
+  │   └─ AuditLog (many, related_name='audit_trail')  [immutable history]
+  └─ User (many)                                      [analysts who edit records]
 ```
 
 ---
@@ -133,15 +133,17 @@ Tenant (1)
 ## Design Trade-offs Made
 
 1. **Separate `RawIngestionLog`:** Increases schema complexity but provides auditor-required proof. Trade-off accepted.
-2. **JSONField for raw payload:** Less queryable than normalized columns but future-proof. Accepted.
-3. **Status + is_locked:** Redundant but explicit; prevents locked-record mutations at ORM level. Accepted.
+2. **JSONField for raw payload:** Storing file metadata (e.g., filename, size, parsing details) inside the log's JSONField rather than full row-level copies saves database overhead under SQLite while keeping ingestion runs traceable.
+3. **Status + is_locked:** Redundant but explicit; prevents locked-record mutations at ORM and serializer level. Accepted.
 4. **Single `category` CharField:** No separate Category model. Rationale: category values (e.g., "Diesel Fuel", "Electricity - Building A") are source-specific and don't need lookup tables for this MVP. Future iterations can normalize.
 
 ---
 
 ## Audit & Compliance Notes
 
-- **Multi-tenant isolation verified at query level:** Every Django query includes `.filter(tenant=current_tenant)`
-- **Immutable tables:** `RawIngestionLog`, `AuditLog` use Django `Meta.managed=False` or read-only permissions
-- **Unit conversions logged:** Conversion math (GAL→L, etc.) hardcoded in parsers and documented in SOURCES.md
-- **Source attribution:** Every `EmissionRecord` links to its `RawIngestionLog`, proving provenance
+- **Multi-tenant isolation verified at query level:** Every Django query includes `.filter(tenant=current_tenant)` (enforced in serializers and viewsets).
+- **Immutable tables:** `RawIngestionLog` and `AuditLog` are write-once and read-only.
+- **Unit conversions logged:** Conversion math (GAL→L, etc.) is hardcoded in the parsers and documented in `SOURCES.md`.
+- **Scope 1 Fuel Normalization:** While `normalized_unit` defaults to `'kgCO2e'` in the Django schema, the parser normalizes Scope 1 fuel items to `'L'` (Liters) to store the fuel volume. Scope 2 records use `'kWh'`, and Scope 3 records use `'kgCO2e'`.
+- **Source attribution:** Every `EmissionRecord` links to its `RawIngestionLog` via foreign key, proving provenance.
+- **Database Migrations:** The schema is fully defined and migrated via the Django app's initial migration (`0001_initial.py`).

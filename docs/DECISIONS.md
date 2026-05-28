@@ -216,6 +216,36 @@ This document records every ambiguity resolved during design and what was chosen
 
 ---
 
+## Decision 11: CORS and Frontend Integration Proxy
+
+**Ambiguity:** How to handle CORS and API requests during local development and testing.
+
+**Chosen:** Vite dev server API proxy.
+
+**Why:**
+- Avoids configuring permissive CORS headers on the Django backend during development.
+- Configured in `frontend/vite.config.js` to route all requests starting with `/api` to `http://localhost:8000` transparently.
+- Simplifies testing since the frontend and backend appear to run on the same origin from the browser's perspective.
+
+**PM Question:** Should we provide a production reverse proxy configuration (e.g., Nginx) or rely on Django CORS settings for staging?
+
+---
+
+## Decision 12: Anonymous User Handling in Audit Logs
+
+**Ambiguity:** How to record changes and ingestion events in the audit log when user authentication is bypassed (e.g., local development or anonymous file ingestion).
+
+**Chosen:** Allow `user` field in `AuditLog` to be null / blank.
+
+**Why:**
+- Prevents database constraint failures during initial setup and testing when uploads or updates are done anonymously.
+- Retains complete historical traceability (timestamps, action details, state diffs) even when not linked to a specific authenticated user.
+- Readily supports transition to user accounts and session/JWT authentication.
+
+**PM Question:** For production, should we require authentication for all endpoints (including file upload) or fallback to a "System" service account for automated uploads?
+
+---
+
 ## What We Didn't Ask the PM (But Should Have)
 
 1. **Emission factors:** Are Scope 3 travel factors (0.255 kg CO2e/km for flights) company-specific or industry standard?

@@ -93,7 +93,7 @@ Dynamic emission factors based on:
 
 ### Why We Didn't
 
-1. **Authentication & authorization are separate from business logic:** OAuth, API credentials, key rotation — best handled in Phase 2 with proper DevOps infrastructure (AWS Secrets Manager, HashiCorp Vault).
+1. **Authentication & authorization are separate from business logic:** OAuth, API credentials, key rotation — best handled with proper DevOps infrastructure (AWS Secrets Manager, HashiCorp Vault).
 2. **Scheduled polling complexity:** Celery (task queue) adds infrastructure (Redis/RabbitMQ). For MVP with 1 test client, file upload is faster to validate.
 3. **Data freshness tradeoff:** MVP assumes monthly batch uploads. Real-time polling would require alerting on data changes (edge case until customer requests it).
 4. **Network/firewall complexity:** SAP OData requires VPN or SAP Cloud Connector. Utility APIs require IP whitelisting. Not portable across customers without custom setup.
@@ -120,13 +120,31 @@ Dynamic emission factors based on:
 
 ---
 
-## Rubric Reflection
+## Tradeoff 4: Row-Level Payload Storage vs. File-Level Ingestion Logging
 
-**Assignment asks:** "Three things you deliberately did not build and why."
+### What We Didn't Build
 
-**Our answer:**
-1. **RBAC** — Complexity for pilot stage; django-guardian available if needed
-2. **Dynamic emission factors** — Data sourcing + factor management too complex for MVP; static factors sufficient for validation
-3. **Real-time data integrations** — Infrastructure (OAuth, Celery, secrets management) better suited for Phase 2; file upload validates business logic first
+Storing the full raw JSON payload of every individual row or travel segment directly inside the database on a per-record basis.
 
-Each tradeoff prioritizes **speed to MVP validation** over feature completeness, which aligns with the 4-day sprint and the principle: "Submit less, but submit work you understand."
+### Why We Didn't
+
+1. **Database Efficiency:** Storing duplicate or stringified raw dictionaries for hundreds or thousands of rows would bloat the SQLite database.
+2. **Simple Ingestion Path:** Reduces write times and query latency on local machines.
+3. **Sufficient Provenance:** Storing the metadata (filename, size, etc.) in `RawIngestionLog` and linking all parsed `EmissionRecord` objects to it preserves file-level auditability. Detailed parsing issues are logged directly in the `AuditLog`.
+
+### What We Do Instead
+
+- Create a single `RawIngestionLog` per file upload event.
+- Store file-level metadata (`filename`, `file_size`, etc.) in the log's `raw_payload`.
+- Link all successfully parsed and flagged `EmissionRecord` objects back to this log.
+- Record any row-specific parser issues in the initial `AuditLog` creation entry.
+
+### Cost of Not Having It
+
+- **Manual File Lookup:** Auditors looking to verify the exact raw text of a specific record must reference the original source file by matching the metadata in the `RawIngestionLog`, rather than fetching it from a database cell.
+
+### When to Build It
+
+- When migrating to a production database (e.g., PostgreSQL) where JSON column indexing and storage partitioning can handle heavy row-level tracking, and when users demand a side-by-side view of the raw row vs. parsed model in the dashboard.
+
+---

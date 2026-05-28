@@ -87,7 +87,7 @@ function App() {
       <header className="header">
         <div className="header-content">
           <div className="logo-section">
-            <h1>🌍 Breadth ESG Dashboard</h1>
+            <h1>Dashboard</h1>
             <p>Environmental, Social & Governance Emissions Management</p>
           </div>
           <div className="header-stats">
