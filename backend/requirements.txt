@@ -1,5 +1,5 @@
 asgiref==3.11.1
-Django==5.1.14
+Django==6.0.5
 django-cors-headers==4.9.0
 djangorestframework==3.17.1
 packaging==26.2
@@ -8,10 +8,3 @@ setuptools==82.0.1
 six==1.17.0
 sqlparse==0.5.5
 wheel==0.47.0
-pandas==2.0.0
-openpyxl==3.10.0
-python-dotenv==1.0.0
-psycopg2-binary==2.9.6
-requests==2.30.0
-gunicorn==20.1.0
-whitenoise==6.5.0
