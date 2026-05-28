@@ -1,35 +1,29 @@
-FROM python:3.11-slim
+FROM node:18-slim AS frontend-builder
+WORKDIR /frontend
+COPY frontend/package*.json ./
+RUN npm install
+COPY frontend/ ./
+RUN npm run build
 
-# Set environment variables
+FROM python:3.11-slim
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1
 
-# Set work directory
 WORKDIR /app
 
-# Install system dependencies
 RUN apt-get update && apt-get install -y \
     postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements and install Python dependencies
 COPY backend/requirements.txt .
 RUN pip install --upgrade pip && \
     pip install -r requirements.txt
 
-# Copy project files
 COPY backend/ /app/
 
-# Install frontend dependencies and build
-COPY frontend/ /app/frontend/
-WORKDIR /app/frontend
-RUN npm install && npm run build
+COPY --from=frontend-builder /frontend/dist /app/frontend/dist
 
-# Return to app directory
-WORKDIR /app
-
-# Collect static files
 RUN python manage.py collectstatic --noinput || true
 
 # Expose port
