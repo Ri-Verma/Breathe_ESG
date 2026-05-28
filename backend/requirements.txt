@@ -8,3 +8,10 @@ setuptools==82.0.1
 six==1.17.0
 sqlparse==0.5.5
 wheel==0.47.0
+pandas==2.0.0
+openpyxl==3.10.0
+python-dotenv==1.0.0
+psycopg2-binary==2.9.6
+requests==2.30.0
+gunicorn==20.1.0
+whitenoise==6.5.0
