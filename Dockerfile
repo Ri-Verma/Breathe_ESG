@@ -24,7 +24,7 @@ COPY backend/ /app/
 
 COPY --from=frontend-builder /frontend/dist /app/frontend/dist
 
-RUN python manage.py collectstatic --noinput || true
+RUN python manage.py collectstatic --noinput
 
 # Expose port
 EXPOSE 8000
