@@ -36,7 +36,6 @@ class AuditLogSerializer(serializers.ModelSerializer):
             'previous_state', 'new_state', 'timestamp'
         ]
         read_only_fields = ['id', 'user', 'timestamp', 'previous_state', 'new_state']
-Log: Tracks every state change. If an analyst edits a flagged fuel entry on the dashboard, this table records which user changed it, when, the old value, and the new value.
 
 
 # ============================================================================

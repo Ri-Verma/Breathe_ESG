@@ -6,7 +6,7 @@ function RecordsTable({ records, onRecordUpdate, onAuditClick }) {
 
   const filteredRecords = records.filter(r => {
     return (!filters.status || r.status === filters.status) &&
-           (!filters.scope || r.scope === filters.scope) &&
+           (!filters.scope || r.scope === parseInt(filters.scope)) &&
            (!filters.category || r.category === filters.category)
   })
 
@@ -108,7 +108,7 @@ function RecordsTable({ records, onRecordUpdate, onAuditClick }) {
                     {record.original_value} {record.original_unit}
                   </td>
                   <td className="emissions-value">
-                    {record.normalized_value.toFixed(2)}
+                    {record.normalized_value != null ? record.normalized_value.toFixed(2) : 'N/A'}
                   </td>
                   <td>
                     <span 

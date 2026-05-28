@@ -13,8 +13,8 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import viewsets, status, permissions, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.parsers import MultiPartParser, FormParser
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+from rest_framework.permissions import AllowAny
 from rest_framework.exceptions import ValidationError as DRFValidationError
 
 from .models import Tenant, RawIngestionLog, EmissionRecord, AuditLog
@@ -72,7 +72,7 @@ class TenantViewSet(viewsets.ReadOnlyModelViewSet):
     """
     queryset = Tenant.objects.all()
     serializer_class = TenantSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
 
 # ============================================================================
@@ -85,7 +85,7 @@ class RawIngestionLogViewSet(viewsets.ReadOnlyModelViewSet):
     Allows analysts to view original raw payloads.
     """
     serializer_class = RawIngestionLogSerializer
-    permission_classes = [IsAuthenticated, IsTenantOwner]
+    permission_classes = [AllowAny, IsTenantOwner]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['source_type', 'tenant__name']
     ordering_fields = ['ingested_at', 'source_type']
@@ -107,8 +107,8 @@ class EmissionRecordViewSet(viewsets.ModelViewSet):
     Supports full CRUD with audit trail tracking.
     """
     serializer_class = EmissionRecordSerializer
-    permission_classes = [IsAuthenticated, IsTenantOwner]
-    parser_classes = (MultiPartParser, FormParser)
+    permission_classes = [AllowAny, IsTenantOwner]
+    parser_classes = (MultiPartParser, FormParser, JSONParser)
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['category', 'tenant__name']
     ordering_fields = ['activity_date', 'created_at', 'status']
@@ -178,9 +178,10 @@ class EmissionRecordViewSet(viewsets.ModelViewSet):
         }
         
         # Create audit log entry
+        audit_user = self.request.user if self.request.user.is_authenticated else None
         AuditLog.objects.create(
             record=updated_record,
-            user=self.request.user,
+            user=audit_user,
             action=f"Status changed from {old_state['status']} to {new_state['status']}",
             previous_state=old_state,
             new_state=new_state,
@@ -261,9 +262,10 @@ class EmissionRecordViewSet(viewsets.ModelViewSet):
                 record.save()
                 
                 # Create audit log
+                audit_user = request.user if request.user.is_authenticated else None
                 AuditLog.objects.create(
                     record=record,
-                    user=request.user,
+                    user=audit_user,
                     action=f"Bulk update: {old_status} → {new_status}. {notes}",
                     previous_state={'status': old_status},
                     new_state={'status': new_status},
@@ -303,11 +305,11 @@ class FileUploadViewSet(viewsets.ViewSet):
     Handles file uploads and routes to appropriate parser.
     Creates RawIngestionLog and EmissionRecords in atomic transaction.
     """
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     parser_classes = (MultiPartParser, FormParser)
     
-    @action(detail=False, methods=['post'], url_path='upload')
-    def upload_file(self, request):
+    
+    def create(self, request):
         """
         Main file upload endpoint.
         POST /api/upload/
@@ -394,9 +396,10 @@ class FileUploadViewSet(viewsets.ViewSet):
                     )
                     
                     # Create initial audit log (creation event)
+                    audit_user = request.user if request.user.is_authenticated else None
                     AuditLog.objects.create(
                         record=emission_record,
-                        user=request.user,
+                        user=audit_user,
                         action=f"Record created from {source_type} upload",
                         new_state={
                             'scope': emission_record.scope,
@@ -423,9 +426,10 @@ class FileUploadViewSet(viewsets.ViewSet):
                     
                     # Create audit log with issues
                     issues_str = '; '.join(record_data.get('issues', []))
+                    audit_user = request.user if request.user.is_authenticated else None
                     AuditLog.objects.create(
                         record=emission_record,
-                        user=request.user,
+                        user=audit_user,
                         action=f"Record created (flagged) from {source_type} upload: {issues_str}",
                         new_state={
                             'scope': emission_record.scope,
@@ -475,7 +479,7 @@ class AuditLogViewSet(viewsets.ReadOnlyModelViewSet):
     Allows analysts to trace all modifications.
     """
     serializer_class = AuditLogSerializer
-    permission_classes = [IsAuthenticated, IsTenantOwner]
+    permission_classes = [AllowAny, IsTenantOwner]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['action', 'user__username']
     ordering_fields = ['timestamp']
